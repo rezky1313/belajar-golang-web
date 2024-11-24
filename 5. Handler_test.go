@@ -1,33 +1,10 @@
 package belajar_golang_web
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 )
-
-/*
--Server adalah struct yang terdapat pada package net/HTTP yang digunakan sebagai representasi web server digolang
--untuk membuat web kita wajib menggunakan server
--saat membuat server ada beberapa yang harus ditentukan seperti host dan port tempat dimana web berjalan
--jika kita mengakkses google sebernarnya web google berjalan pada port 80
--tapi disarankan untuk keperluan belajar tidak perlu menggunakan port 80
--karena dibeberapa sistem operasi diwajibkan sebagai administrator, jadi ketika menggunakan windows
-pada saat running harus sebagai administrator direkomendasikan port 8080
--untuk host bisa menggunakan localhost saja, localhoist adalah penanda kita menjalankan server pada komputer sendiri
--Setelah membuat sever kita bisa menjalankan server tersebut dengan funciton ListenAndServe()
-itu adalah method yang ada didalam server, tinggal panggil maka web server akan berjalan
-*/
-
-func TestServer(t *testing.T) {
-	server := http.Server{
-		Addr: "localhost:8080",
-	}
-
-	err := server.ListenAndServe()
-	if err != nil {
-		panic(err)
-	}
-}
 
 /*
 Handler
@@ -56,4 +33,33 @@ func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
 
 -jadi handler function adalah sebuah tipe sebagai alias untuk function method pada interface handller
 -
+*/
+
+func TestHandler(t *testing.T) {
+	var handler http.HandlerFunc = func(writer http.ResponseWriter, request *http.Request) {
+		//logic Web
+		fmt.Fprint(writer, "Hello World")
+	}
+
+	server := http.Server{
+		Addr:    "localhost:8080",
+		Handler: handler,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
+}
+
+/*
+-membuat variable dengan tipe handlerfunc yang beriisikan anonymous function dengan parameter writer dan request
+-Writer merupakan response yang akna diberikan kepada client
+-sedangkan request adalah requst yang diterima dari client
+-jika ingin mengembalikan response dengan menggunakan writer
+-dengan cara writer.Write hanya saja itu membutuhkan binary atau byte arary
+-agar mudah kita bisa menggunbakan fmt format, jika sebelumnya kita sering menggunakan println atau printf
+sekarang bisa menggnakan Fprint, didalam fprint ada parameter dan data yang akan dikirim ke writernya
+jadi kita tidak perlu lagi konversi data menjadi byte secara manual
+
 */
