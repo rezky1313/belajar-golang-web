@@ -76,3 +76,33 @@ misa /images/ artinya akan dieksekusi jika endpointnya /images/, /images/contoh 
 misal jika terdapat URL /images dan /images/thumbnails, maka jika mengakses /images/thumbnails akan mengakses
 /images/thumbnails, bukan /images
 */
+
+/*
+Request
+-Request adalah struct yang mempresentasikan HTTP Reaquest yang dikirim oleh browser
+-Semua informasi yang dikirim bisa didapatkan di Request yang ada di parameter kedua di handler
+-Seperti URL, http body, http header dll
+
+
+*/
+
+func TestRequest(t *testing.T) {
+	var handler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, r.Method)     //request method meliputi GET,POST,UPDATE defaultnya GET
+		fmt.Fprintln(w, r.RequestURI) //merupakan url yang akan diprint dilayar
+	}
+
+	server := http.Server{
+		Addr:    "localhost:8080",
+		Handler: handler,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
+}
+
+/*
+-jadi jika ingin mendapatkan informasi data seputar Request bisa menggunakan cara diatas
+*/
