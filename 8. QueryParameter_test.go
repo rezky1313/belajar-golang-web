@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -183,11 +184,21 @@ func HandlerValidasiParameter4(writer http.ResponseWriter, request *http.Request
 	fmt.Fprintf(writer, "search: %v", search)
 }
 
+func HandlerMultipleParameterValues(writer http.ResponseWriter, request *http.Request) {
+	//menambahkan banyak value ke query parameter
+	//query sebenarnya merupakan map, jadi ketika menggunakan metode GET itu yang diambil data pertamanya
+	query := request.URL.Query()
+
+	names := query["names"]
+	fmt.Fprint(writer, strings.Join(names, " ")) //menggabungkan string dengan menambahkan separator dibelakang
+}
+
 func TestParameterValidation(t *testing.T) {
-	request := httptest.NewRequest(http.MethodGet, "localhost:8080/validasi?search=", nil)
+	request := httptest.NewRequest(http.MethodGet, "localhost:8080/validation?names=rezky&names=Wahyudi&names=kurniawan", nil)
 	recorder := httptest.NewRecorder()
 
-	HandlerValidasiParameter4(recorder, request)
+	//HandlerValidasiParameter4(recorder, request)
+	HandlerMultipleParameterValues(recorder, request)
 
 	response := recorder.Result()
 	body, _ := io.ReadAll(response.Body)
