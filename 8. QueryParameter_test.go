@@ -97,7 +97,7 @@ func HandlerCatalogue(writer http.ResponseWriter, request *http.Request) {
 }
 
 func TestMultiParameter(t *testing.T) {
-	request := httptest.NewRequest(http.MethodGet, "localhost:8080/catalogue?search=nike&page=2", nil)
+	request := httptest.NewRequest(http.MethodGet, "localhost:8080/catalogue", nil)
 	recorder := httptest.NewRecorder()
 
 	HandlerCatalogue(recorder, request)
@@ -110,6 +110,93 @@ func TestMultiParameter(t *testing.T) {
 	status := recorder.Result().StatusCode
 	if status != http.StatusOK {
 		t.Errorf("unexpected status code: Want %v, Got %v", http.StatusOK, status)
+	}
+	fmt.Println(status)
+}
+
+/*
+Validasi Parameter
+-digunakan untuk cek apakah parameter sesuai dengan yang diinginkan atau cek apakah parameter key ada atau tidak
+-misalnya cek apakah query kosong atau memang tidak ada, query yang tidak boleh kosong/input penting,
+sampai menentukan nilai default nilai default pada query parameter
+*/
+
+func HandlerValidasiParameter1(writer http.ResponseWriter, request *http.Request) {
+	//validasi key paremeter ada dan tidak ada
+	query := request.URL.Query()
+
+	//pada pengecekan key "search" menggunakan "has"
+	if query.Has("search") {
+		fmt.Println("Key 'search' ditemukan")
+	} else {
+		fmt.Println("Key 'search' tidak ditemukan")
+	}
+
+	searchQuery := query.Get("search")
+	//pageQuery := query.Get("page")
+
+	fmt.Fprintf(writer, "Search: %v", searchQuery)
+	//fmt.Fprintf(writer, "Page: %v", pageQuery)
+
+}
+func HandlerValidasiParameter2(writer http.ResponseWriter, request *http.Request) {
+	//validasi apakah key ada tapi kosong dan key memang tidak ada serta jika query ditemukan
+	query := request.URL.Query()
+
+	if !query.Has("search") {
+		fmt.Println("Query key search tidak ditemukan")
+		// search := query.Get("search")
+		// fmt.Fprintf(writer, "No query:%v", search)
+	} else if query.Get("search") == "" {
+		fmt.Println("query ditemukan tapi kosong")
+		search := query.Get("search")
+		fmt.Fprintf(writer, "Search:%v", search)
+	} else {
+		fmt.Println("Query search ditemukan")
+		search := query.Get("search")
+		fmt.Fprintf(writer, "search:%v", search)
+	}
+}
+func HandlerValidasiParameter3(writer http.ResponseWriter, request *http.Request) {
+	//validasi input data penting
+	query := request.URL.Query()
+
+	search := query.Get("search")
+	if search == "" {
+		//pesan error bisa menggnakan http.error atau t.errorf atau menggunakan print teks biasa
+		//jika menggunakan error handling maka program akan terhenti karena menggunakan return dan test jadi gagal
+		http.Error(writer, "Parameter tidak boleh kosong", http.StatusBadRequest)
+		return
+	} else {
+		fmt.Fprintf(writer, "search:%v", search)
+	}
+
+}
+func HandlerValidasiParameter4(writer http.ResponseWriter, request *http.Request) {
+	//validasi menggunakan nilai default jika kosong
+	query := request.URL.Query()
+
+	search := query.Get("search")
+	if search == "" {
+		search = "adidas"
+	}
+	fmt.Fprintf(writer, "search: %v", search)
+}
+
+func TestParameterValidation(t *testing.T) {
+	request := httptest.NewRequest(http.MethodGet, "localhost:8080/validasi?search=", nil)
+	recorder := httptest.NewRecorder()
+
+	HandlerValidasiParameter4(recorder, request)
+
+	response := recorder.Result()
+	body, _ := io.ReadAll(response.Body)
+	fmt.Println(string(body))
+	defer response.Body.Close()
+
+	status := recorder.Result().StatusCode
+	if status != http.StatusOK {
+		t.Errorf("unexpected status code: want %v, got %v", http.StatusOK, status)
 	}
 	fmt.Println(status)
 }
