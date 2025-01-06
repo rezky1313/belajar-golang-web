@@ -43,6 +43,23 @@ func (middleware *logMiddleware) ServeHTTP(writer http.ResponseWriter, request *
 	fmt.Println("After Execute Handler")
 }
 
+// membuat error Handler
+type ErrorHandler struct {
+	Handler http.Handler
+}
+
+func (handler *ErrorHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	defer func() {
+		err := recover()
+		fmt.Println("Recover: ", err)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(writer, "Error: %s", err)
+		}
+	}()
+	handler.Handler.ServeHTTP(writer, request)
+}
+
 func TestMiddleware(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
@@ -59,6 +76,7 @@ func TestMiddleware(t *testing.T) {
 		fmt.Println("Handler Executed")
 		panic("Ups its not you, its from Us")
 	})
+	//diatas belum menggunakan error handler sehingga program berhenti
 
 	// middleware := new(logMiddleware)
 	// middleware.Handler = mux
@@ -66,9 +84,13 @@ func TestMiddleware(t *testing.T) {
 		Handler: mux,
 	}
 
+	errorHandler := &ErrorHandler{
+		Handler: logMiddleware,
+	}
+
 	server := http.Server{
 		Addr:    "localhost:8080",
-		Handler: logMiddleware,
+		Handler: errorHandler,
 	}
 
 	err := server.ListenAndServe()
