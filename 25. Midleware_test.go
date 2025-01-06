@@ -118,4 +118,8 @@ error Handler
 -dikarenakan middleware kita buat sendiri menggunakan interface maka error handler harus dibuat sendiri juga
 -sehingga jika terjadi panic kita bisa recover di middlweware dan mengubah panic tersebut menjadi error response
 -jadi program tidak berhenti mendadak tanpa pesan error
+
+-Error handler diletakkan sebagai handler pada server
+-jadi error handler dijadikan sebagai filter utama, lalu error handler meneruskan request ke logMiddleware
+-lalu midleware baru meneruskan ke mux
 */
